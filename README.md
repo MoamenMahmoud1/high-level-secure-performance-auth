@@ -138,21 +138,51 @@ docker compose down
 
 ## ⚙️ Environment Variables
 
-Create a `.env` file next to `docker-compose.yml`:
+Create a `.env` file next to `manage.py`:
 
 ```
-SECRET_KEY=your_secret_key
-DEBUG=False
-POSTGRES_DB=prod_db
-POSTGRES_USER=prod_user
-POSTGRES_PASSWORD=strongpass
-POSTGRES_HOST=postgres
-REDIS_HOST=redis
-RABBIT_HOST=rabbitmq
-EMAIL_HOST_USER=your_email
-EMAIL_HOST_PASSWORD=your_pass
-GOOGLE_CLIENT_ID=xxxxx
-GOOGLE_CLIENT_SECRET=xxxxx
+# Django secret
+
+
+DEBUG=True
+
+# Allowed hosts
+ALLOWED_HOSTS=127.0.0.1,localhost
+SECRET_KEY = xxxxxx_strong_secret_key_xxxxx
+JWE_KEY= xxxx_strong_jwe_key_xxxxx
+# Database example
+#DB_NAME=your_db_name
+#DB_USER=your_db_user
+#DB_PASSWORD=your_db_password
+#DB_HOST=localhost
+#DB_PORT=5432
+
+# Email settings (Gmail example)
+EMAIL_HOST_USER=xxxx@gmail.com
+EMAIL_HOST_PASSWORD=xxxx-xxxx-xxxx
+DEFAULT_FROM_EMAIL= xxxx@gmail.com
+EMAIL_USE_TLS=True
+EMAIL_PORT=587
+EMAIL_HOST=smtp.gmail.com
+
+# Frontend URL
+FRONTEND_URL=http://localhost:8000
+GOOGLE_CLIENT_ID = xxxx-xxxx-xxxx-xxxx
+GOOGLE_CLIENT_SECRET = xxxx-xxxx-xxx
+
+#Redis_URL
+REDIS_URL=redis://127.0.0.1:6379/1
+
+#CELERY_URL (Rabbitmq)
+CELERY_BROKER_URL=xxxxxx
+CELERY_RESULT_BACKEND=xxxxx
+
+# AWS Storage
+AWS_ACCESS_KEY_ID=xxxx
+AWS_SECRET_ACCESS_KEY=xxxxx
+AWS_STORAGE_BUCKET_NAME=xxxx
+AWS_S3_REGION_NAME=xxxx
+
 ```
 
 ---
