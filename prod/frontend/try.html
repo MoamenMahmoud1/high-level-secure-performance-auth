@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Google Login Test</title>
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <script>
+      function handleCredentialResponse(response) {
+        const id_token = response.credential;
+
+        console.log("Google ID Token:", id_token);
+
+        // ابعت الـ id_token للباك إند بتاعك
+        fetch("http://localhost:8000/api/auth/google/", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ id_token }),
+        })
+          .then(res => res.json())
+          .then(data => {
+            console.log("Server response:", data);
+            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+          });
+      }
+    </script>
+  </head>
+
+  <body>
+    <h1>Google Login Test</h1>
+
+    <div
+      id="g_id_onload"
+      data-client_id="684518044962-utmch6g8hnndj19s4u1e83l6cdbc5e90.apps.googleusercontent.com"
+      data-callback="handleCredentialResponse"
+    ></div>
+
+    <div
+      class="g_id_signin"
+      data-type="standard"
+      data-size="large"
+      data-theme="outline"
+    ></div>
+
+    <pre id="result"></pre>
+  </body>
+</html>

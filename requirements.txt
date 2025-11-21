@@ -1,0 +1,22 @@
+Django>=4.2,<5
+djangorestframework>=3.14,<4
+djangorestframework-simplejwt>=6.3,<7
+django-phonenumber-field[phonenumbers]>=6.0,<7
+requests>=2.31,<3
+python-decouple>=4.8,<5
+python-jose[cryptography]
+django-storages>=1.14,<2
+boto3>=1.28,<2
+celery==5.4.0
+amqp==5.2.0
+pytz==2024.1
+redis==5.0.1
+django-redis>=6.2,<7
+psycopg2-binary==2.9.9
+gunicorn==21.2.0
+django-celery-beat==2.6.0
+flower>=1.0,<2
+# django-debug-toolbar>=4.3,<5
+django-silk>=5.1,<6
+psycopg2-binary==2.9.11
+
