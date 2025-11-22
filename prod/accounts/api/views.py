@@ -22,6 +22,7 @@ from accounts.models import Role
 from django.db.models import Prefetch , Case , When , BooleanField
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
+from django.http import JsonResponse
 
 logger = logging.getLogger(__name__)
 User = CustomUserModel
@@ -92,10 +93,11 @@ class SignUpView(APIView):
         response = Response({"detail": f"User created with id_{uid}"}, status=status.HTTP_201_CREATED)
 
         # Set HttpOnly cookies for JWT access and refresh tokens
-        response.set_cookie(key=f"access_token_{uid}", value=str(token))
-        response.set_cookie(key=f"refresh_token_{uid}", value=str(refresh))
+        response.set_cookie(key=f"access_token_{uid}", value=str(token) , samesite="Lax" ,max_age=3600)
+        response.set_cookie(key=f"refresh_token_{uid}", value=str(refresh) , samesite="Lax",httponly=True,secure=False,max_age=3600)
 
         logger.debug(f"Signup completed for user id {uid}")
+        
         return response
 
 
@@ -122,10 +124,11 @@ class LogInView(APIView):
         }, status=status.HTTP_200_OK)
 
         # Set HttpOnly cookies
-        response.set_cookie(key=f"access_token_{uid}", value=str(token))
-        response.set_cookie(key=f"refresh_token_{uid}", value=str(refresh))
-
+        response.set_cookie(key=f"access_token_{uid}",value=str(token),samesite="None" ,secure=True , httponly=True, max_age=60*60*60*60)
+        response.set_cookie(key=f"refresh_token_{uid}", value=str(refresh),samesite="None", secure=True,httponly=True, max_age=60*60*60*60)
+    
         logger.debug(f"User {uid} logged in successfully")
+        logger.debug(f"it`s the response before edition {response}")
         return response
 
 
@@ -167,6 +170,7 @@ class GoogleAuthInitView(APIView):
     def get(self, request):
         state = str(uuid.uuid4())
         request.session['google_auth_state'] = state
+        request.session.modified = True
         logger.debug(f"Generated state: {state}")
         logger.debug(f"Session after setting state: {request.session.items()}")
         google_url = (
@@ -177,7 +181,10 @@ class GoogleAuthInitView(APIView):
             f"scope=openid email profile&"
             f"state={state}"
         )
-        return Response({"url": google_url})
+        
+        
+        
+        return JsonResponse({"url": google_url})
 
 
 # ===============================
@@ -189,6 +196,11 @@ class GoogleAuthCallbackView(APIView):
     permission_classes = [AllowAny]
 
     def get(self, request):
+        # ✅ اطبع session info للـ debugging
+        logger.debug(f"=== CALLBACK DEBUG ===")
+        logger.debug(f"Session key: {request.session.session_key}")
+        logger.debug(f"Cookies received: {request.COOKIES}")
+        
         code = request.query_params.get('code')
         state = request.query_params.get('state')
         session_state = request.session.get('google_auth_state')
@@ -200,6 +212,7 @@ class GoogleAuthCallbackView(APIView):
         if state != session_state:
             logger.warning("State mismatch in Google callback")
             return Response({"error": "Invalid state"}, status=400)
+        del request.session['google_auth_state']
 
         # Exchange code for tokens
         token_url = "https://oauth2.googleapis.com/token"
@@ -210,9 +223,14 @@ class GoogleAuthCallbackView(APIView):
             "redirect_uri": settings.GOOGLE_REDIRECT_URI,
             "grant_type": "authorization_code",
         }
+        
 
-        token_res = requests.post(token_url, data=data).json()
-        logger.debug(f"Token response: {token_res}")
+        token_done = requests.post(token_url, data=data)
+        token_status = token_done.status_code
+        logger.debug(f"Token response: {token_status}")
+        if  token_status != 200:
+            return Response({"error":"token Error with google"})
+        token_res = token_done.json()
 
         access_token = token_res.get('access_token')
 
@@ -266,7 +284,7 @@ class GoogleAuthCallbackView(APIView):
 # Refresh token endpoint
 # Handles refreshing JWT access tokens using refresh token cookie
 # ===============================
-@method_decorator(csrf_exempt, name='dispatch')
+#@method_decorator(csrf_exempt, name='dispatch')
 class RefreshTokenView(APIView):
     authentication_classes = [] 
     permission_classes = [AllowAny]

@@ -1,47 +1,189 @@
 <!DOCTYPE html>
 <html>
-  <head>
-    <title>Google Login Test</title>
-    <script src="https://accounts.google.com/gsi/client" async defer></script>
-    <script>
-      function handleCredentialResponse(response) {
-        const id_token = response.credential;
+<head>
+  <meta charset="UTF-8">
+  <title>Google Login Test</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      padding: 2rem;
+    }
+    button {
+      padding: 0.8rem 1.5rem;
+      font-size: 1rem;
+      cursor: pointer;
+      margin: 10px;
+    }
+    #log {
+      margin-top: 20px;
+      padding: 10px;
+      background: #f0f0f0;
+      border: 1px solid #ccc;
+      white-space: pre-wrap;
+      word-break: break-all;
+      max-height: 400px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 12px;
+    }
+    .section {
+      margin: 10px 0;
+      padding: 10px;
+      background: white;
+      border-left: 3px solid #4CAF50;
+    }
+  </style>
+</head>
+<body>
+  <h1>Google Login Test</h1>
+  <button id="debugBtn">🔍 Debug Mode (Check Cookies)</button>
+  <button id="loginBtn">🚀 Login with Google</button>
+  <button id="checkCookiesBtn">🍪 Check Cookies Now</button>
+  <div id="log"></div>
 
-        console.log("Google ID Token:", id_token);
-
-        // ابعت الـ id_token للباك إند بتاعك
-        fetch("http://localhost:8000/api/auth/google/", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify({ id_token }),
-        })
-          .then(res => res.json())
-          .then(data => {
-            console.log("Server response:", data);
-            document.getElementById("result").textContent = JSON.stringify(data, null, 2);
-          });
+  <script>
+    function log(message, isSection = false) {
+      const logDiv = document.getElementById('log');
+      if (isSection) {
+        logDiv.innerHTML += `<div class="section">${message}</div>`;
+      } else {
+        logDiv.innerHTML += message + '\n';
       }
-    </script>
-  </head>
+      console.log(message);
+    }
 
-  <body>
-    <h1>Google Login Test</h1>
+    function checkCookies() {
+      log('=== CHECKING COOKIES ===', true);
+      log('All cookies: ' + document.cookie);
+      
+      // Check if sessionid exists
+      const cookies = document.cookie.split(';');
+      let sessionFound = false;
+      cookies.forEach(cookie => {
+        const [name, value] = cookie.trim().split('=');
+        if (name === 'sessionid') {
+          sessionFound = true;
+          log('✅ sessionid found: ' + value);
+        }
+      });
+      
+      if (!sessionFound) {
+        log('❌ No sessionid cookie found!');
+      }
+      log('');
+    }
 
-    <div
-      id="g_id_onload"
-      data-client_id="684518044962-utmch6g8hnndj19s4u1e83l6cdbc5e90.apps.googleusercontent.com"
-      data-callback="handleCredentialResponse"
-    ></div>
+    // منع أي reload من Live Server مؤقتاً
+    let preventReload = false;
+    
+    window.addEventListener('beforeunload', function(e) {
+      if (preventReload) {
+        e.preventDefault();
+        e.returnValue = '';
+      }
+    });
 
-    <div
-      class="g_id_signin"
-      data-type="standard"
-      data-size="large"
-      data-theme="outline"
-    ></div>
+    // Debug Mode
+    document.getElementById('debugBtn').addEventListener('click', async function(e) {
+      e.preventDefault();
+      preventReload = true;
+      
+      log('=== INIT REQUEST ===', true);
+      log('Sending request to: https://127.0.0.1:8000/api/auth/google/init/');
+      log('Credentials: include');
+      log('');
+      
+      // Check cookies BEFORE request
+      log('--- BEFORE REQUEST ---');
+      checkCookies();
+      
+      try {
+        const response = await fetch("https://127.0.0.1:8000/api/auth/google/init/", {
+          method: "GET",
+          credentials: "include"
+        });
+        
+        log('--- RESPONSE RECEIVED ---', true);
+        log('Status: ' + response.status);
+        log('Status Text: ' + response.statusText);
+        log('');
+        
+        // Try to read headers (Set-Cookie won't be visible due to security)
+        log('Response Headers:');
+        for (let [key, value] of response.headers.entries()) {
+          log(`  ${key}: ${value}`);
+        }
+        log('');
+        
+        const data = await response.json();
+        log('Response Body:');
+        log(JSON.stringify(data, null, 2));
+        log('');
+        
+        // Wait a bit for cookie to be set
+        await new Promise(resolve => setTimeout(resolve, 100));
+        
+        // Check cookies AFTER request
+        log('--- AFTER REQUEST ---');
+        checkCookies();
+        
+        log('=== END ===', true);
+        
+      } catch (error) {
+        log('❌ ERROR: ' + error.message);
+      } finally {
+        preventReload = false;
+      }
+    });
 
-    <pre id="result"></pre>
-  </body>
+    // Check Cookies Button
+    document.getElementById('checkCookiesBtn').addEventListener('click', function(e) {
+      e.preventDefault();
+      checkCookies();
+    });
+
+    // Login Button
+    document.getElementById('loginBtn').addEventListener('click', async function(e) {
+      e.preventDefault();
+      
+      log('=== STARTING LOGIN FLOW ===', true);
+      checkCookies();
+      
+      try {
+        const response = await fetch("https://127.0.0.1:8000/api/auth/google/init/", {
+          method: "GET",
+          credentials: "include"
+        });
+        
+        const data = await response.json();
+        log('Redirecting to Google...');
+        log('Google URL: ' + data.url);
+        
+        // Redirect after a short delay to see the log
+        setTimeout(() => {
+          window.location.href = data.url;
+        }, 1000);
+        
+      } catch (error) {
+        log('❌ ERROR: ' + error.message);
+      }
+    });
+
+    // On page load, check if we're back from Google
+    window.addEventListener('DOMContentLoaded', function() {
+      const urlParams = new URLSearchParams(window.location.search);
+      const error = urlParams.get('error');
+      const login = urlParams.get('login');
+      
+      if (error) {
+        log('=== RETURNED FROM GOOGLE WITH ERROR ===', true);
+        log('Error: ' + error);
+        checkCookies();
+      } else if (login === 'success') {
+        log('=== LOGIN SUCCESSFUL ===', true);
+        checkCookies();
+      }
+    });
+  </script>
+</body>
 </html>

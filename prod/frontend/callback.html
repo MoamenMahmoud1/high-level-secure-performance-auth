@@ -1,0 +1,38 @@
+<script>
+(async () => {
+  // 1️⃣ اطبع URL كامل اللي جالك من Google
+  console.log("Full URL from Google:", window.location.href);
+
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get("code");
+  const state = params.get("state");
+
+  // 2️⃣ اطبع كل query params
+  console.log("Code:", code);
+  console.log("State:", state);
+
+  try {
+    // إرسال GET مع code و state في URL
+    const res = await fetch(
+      `https://127.0.0.1:8000/api/auth/google/callback/?code=${code}&state=${state}`,
+      {
+        method: "GET",
+        credentials: "include"
+      }
+    );
+
+    const data = await res.json();
+    document.getElementById("result").textContent = JSON.stringify(data, null, 2);
+
+    if (res.ok) {
+      document.body.insertAdjacentHTML('beforeend', '<p>Login successful! 🎉</p>');
+    } else {
+      document.body.insertAdjacentHTML('beforeend', '<p>Login failed.</p>');
+    }
+
+  } catch (err) {
+    console.error(err);
+    document.getElementById("result").textContent = "Error connecting to backend.";
+  }
+})();
+</script>

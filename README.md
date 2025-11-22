@@ -250,17 +250,51 @@ Includes tests for:
 * Rate-limit friendly architecture
 
 ---
+## RUN The server by httpS
+
+* openssl req -x509 -newkey rsa:4096 -nodes -keyout key.pem -out cert.pem -days 365
+* python manage.py runserver_plus 127.0.0.1:8000 --cert-file cert.pem --key-file key.pem
+
 
 ## 📜 License
 
-MIT License
+ Apache License
 
----
 
-If you want, I can add:
-✅ API Documentation section
-✅ Sequence diagrams
-✅ Service architecture diagrams
-✅ Full Docker architecture image
 
-Just tell me and I'll add them.
+
+
++-----------------+
+|   Frontend      |
++--------+--------+
+         |
+         v
++-----------------+
+|   Django API    |
+| JWT & JWE Auth  |
++--------+--------+
+         |
+         v
++--------+--------+        +----------------+
+|   Redis Cache   | <----> | Role-based ACL |
++-----------------+        +----------------+
+         |
+         v
++--------+--------+
+|   Celery Worker |
+| async tasks     |
++-----------------+
+         |
+         v
++--------+--------+
+| RabbitMQ Broker |
++-----------------+
+         |
+         v
++-----------------+
+| PostgreSQL DB   |
++-----------------+
+
+
+
+

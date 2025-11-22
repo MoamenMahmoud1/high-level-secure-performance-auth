@@ -59,3 +59,12 @@ rabbitmq.conf/
 # Celery beat schedule
 # -------------------------
 celerybeat-schedule
+
+
+
+
+
+
+# SSL certificates
+*.pem
+*.key

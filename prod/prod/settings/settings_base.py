@@ -13,10 +13,11 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = config("SECRET_KEY")
 JWE_KEY = config("JWE_KEY")
 
-ALLOWED_HOSTS = []
+
 
 # 🧩 INSTALLED APPS
 DJANGO_APPS = [
+    'django_extensions',
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -27,6 +28,7 @@ DJANGO_APPS = [
 ]
 
 THIRD_PARTY_APPS = [
+
     'storages',
     "corsheaders",
     'rest_framework',
@@ -45,10 +47,10 @@ INSTALLED_APPS = DJANGO_APPS + THIRD_PARTY_APPS + PROJECT_APPS
 # 🧵 MIDDLEWARE
 MIDDLEWARE = [
     "corsheaders.middleware.CorsMiddleware",
-    'silk.middleware.SilkyMiddleware',
-    'middleware.DecryptRefreshMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
+    'middleware.DecryptRefreshMiddleware',
+    'silk.middleware.SilkyMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
@@ -95,8 +97,8 @@ AUTH_PASSWORD_VALIDATORS = [
 # 🌍 INTERNATIONALIZATION
 LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
-USE_I18N = True
-USE_TZ = True
+#USE_I18N = True
+#USE_TZ = True
 
 # 📁 STATIC & MEDIA
 STATIC_URL = '/static/'
@@ -150,19 +152,10 @@ FRONTEND_URL = config('FRONTEND_URL', default="http://localhost:3000")
 # 🌐 GOOGLE LOGIN
 GOOGLE_CLIENT_ID = config("GOOGLE_CLIENT_ID", default="")
 GOOGLE_CLIENT_SECRET = config("GOOGLE_CLIENT_SECRET", default="")
-GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI", default="http://127.0.0.1:8000/api/auth/google/callback/")
+GOOGLE_REDIRECT_URI = config("GOOGLE_REDIRECT_URI", default="")
 
-# 🌐 CORS
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
-]
-CORS_ALLOW_CREDENTIALS = True
 
-# 🍪 COOKIE SECURITY
-SESSION_COOKIE_SECURE = False
-SESSION_COOKIE_SAMESITE = 'Lax'
-CSRF_COOKIE_SECURE = False
-CSRF_COOKIE_SAMESITE = 'Lax'
+
 
 
 # Caching
