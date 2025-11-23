@@ -1,267 +1,206 @@
-# High-Level Secure & High-Performance Auth System
+# High-Level Secure Performance Auth
 
-### A Production-Grade Authentication & Authorization Architecture (Django \| DRF \| JWT \| JWE \| Redis \| Celery \| Docker)
+A production‑grade authentication system built with **Django**, **Django REST Framework**, **JWT**, **JWE**, **HttpOnly Cookies**, **Celery**, **Redis**, and **RabbitMQ**. The project focuses on **security**, **performance**, and **scalability**, providing a solid foundation for modern backend systems.
 
-------------------------------------------------------------------------
+---
 
-## ðŸ“Œ Overview
+## 🚀 Features
 
-This project is a **high-security, high-performance authentication
-framework** built using **Django + Django REST Framework**, designed
-using real-world production techniques. It includes:
+### 🔐 Security & Authentication
 
--   **Advanced JWT Authentication** (Access + Refresh)
--   **JWE Encryption Layer** for token confidentiality\
--   **Secure Cookies (HTTPOnly, SameSite, Secure)**\
--   **Blacklisting & Token Rotation**\
--   **Asynchronous Task Handling** using **Celery + Redis + RabbitMQ**
--   **Microservice-ready Structure**
--   **Dockerized Deployment**
--   **Scalable Settings Structure (env-based)**\
--   **Full protection against hijacking, replay, CSRF, XSS, and token
-    theft**
+* JWT **Access** & **Refresh** tokens
+* **JWE (JSON Web Encryption)** for secure transport of JWT
+* **HttpOnly**, **Secure**, **SameSite=Strict** cookies
+* **Token Rotation** & **Blacklist** mechanism
+* IP & Client Fingerprint checks (middleware)
+* Email Verification & Password Reset
+* Google OAuth2 Login
 
-The system is built for **enterprise workloads** and reflects
-**best-practice security and architecture standards**.
+### ⚙️ Architecture
 
-------------------------------------------------------------------------
+* Modular Django apps structure
+* Celery worker + periodic scheduled tasks
+* RabbitMQ as message broker
+* Redis for caching & Celery backend
+* Fully containerized with Docker
+* Ready for production with separate `dev` and `prod` settings
 
-## ðŸš€ Key Features
+---
 
-### âœ” 1. Advanced JWT Security Layer
+## 📁 Project Structure
 
--   Access Token (shortâ€‘living)
--   Refresh Token (longâ€‘living)
--   Automatic rotation
--   Blacklisting system\
--   JWE encryption encapsulating JWT
-
-### âœ” 2. Secure Cookie-Based Auth
-
--   `HttpOnly`
--   `Secure`
--   `SameSite=Strict`
--   Tokens are **never exposed** to JavaScript â†’ protects from XSS.
-
-### âœ” 3. Enterprise Architecture
-
-The project is split into **wellâ€‘isolated Django apps**:
-
-  -----------------------------------------------------------------------
-  App                       Purpose
-  ------------------------- ---------------------------------------------
-  **accounts**              Core user system (register, login, email
-                            confirm, password reset)
-
-  **authentication**        JWT/JWE issuing, verification, rotation
-
-  **middlewares**           Global request validation, security guards
-
-  **tasks**                 Celery async tasks (emails, logs, security
-                            events)
-
-  **utils**                 Common helpers, validators, encryption logic
-  -----------------------------------------------------------------------
-
-------------------------------------------------------------------------
-
-## ðŸ“‚ Project Structure (File Tree)
-
-    high-level-secure-performance-auth/
-    â”œâ”€â”€ Dockerfile
-    â”œâ”€â”€ manage.py
-    â”œâ”€â”€ docker-compose.yml
-    â”œâ”€â”€ requirements.txt
-    â”œâ”€â”€ .env.example
-    â”œâ”€â”€ core/
-    â”‚   â”œâ”€â”€ settings/
-    â”‚   â”‚   â”œâ”€â”€ base.py
-    â”‚   â”‚   â”œâ”€â”€ dev.py
-    â”‚   â”‚   â””â”€â”€ prod.py
-    â”‚   â”œâ”€â”€ urls.py
-    â”‚   â””â”€â”€ wsgi.py
-    â”œâ”€â”€ accounts/
-    â”‚   â”œâ”€â”€ models.py
-    â”‚   â”œâ”€â”€ serializers.py
-    â”‚   â”œâ”€â”€ views.py
-    â”‚   â”œâ”€â”€ urls.py
-    â”‚   â””â”€â”€ services/
-    â”œâ”€â”€ authentication/
-    â”‚   â”œâ”€â”€ jwt.py
-    â”‚   â”œâ”€â”€ jwe.py
-    â”‚   â”œâ”€â”€ backends.py
-    â”‚   â””â”€â”€ utils.py
-    â”œâ”€â”€ middlewares/
-    â”‚   â”œâ”€â”€ auth_middleware.py
-    â”‚   â””â”€â”€ throttling.py
-    â”œâ”€â”€ tasks/
-    â”‚   â”œâ”€â”€ celery.py
-    â”‚   â”œâ”€â”€ email_tasks.py
-    â”‚   â””â”€â”€ security_tasks.py
-    â””â”€â”€ utils/
-        â”œâ”€â”€ responses.py
-        â””â”€â”€ helpers.py
-
-------------------------------------------------------------------------
-
-## ðŸ§  System Architecture Diagram
-
-               â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€ Client (Browser) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-               â”‚                                             â”‚
-               â”‚    Sends credentials (HTTPS POST)           â”‚
-               â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                      â”‚
-                                      â–¼
-                          â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                          â”‚      Django API       â”‚
-                          â”‚  Authentication View  â”‚
-                          â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                                     â”‚
-                          Validate credentials
-                                     â”‚
-                                     â–¼
-              â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-              â”‚  Generate JWT Access + Refresh Tokens â”‚
-              â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                               â”‚
-                               â–¼
-                    â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                    â”‚      JWE Layer       â”‚
-                    â”‚ Encrypt JWT tokens   â”‚
-                    â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”¬â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-                               â”‚
-                               â–¼
-                  â”Œâ”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”
-                  â”‚ Secure Cookie (HTTPOnly)    â”‚
-                  â”‚ SameSite=Strict, Secure     â”‚
-                  â””â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”˜
-
-------------------------------------------------------------------------
-
-## ðŸ” Security Highlights (Enterprise-Level)
-
-### âœ” JWE Encryption
-
-Tokens are wrapped inside an **encrypted container**.\
-Even if leaked â†’ attacker cannot decode anything.
-
-### âœ” Secure Cookies (No localStorage, No sessionStorage)
-
-Prevents: - XSS token theft\
-- MITM token extraction\
-- Client-side manipulation
-
-### âœ” Token Rotation
-
-On every refresh request: - Old refresh token â†’ blacklisted\
-- New tokens issued\
-- Threat model: **prevents replay attacks**
-
-### âœ” CSRF Protection
-
-Because tokens are inside `HttpOnly + SameSite=Strict` cookies â†’\
-**CSRF is naturally mitigated**.
-
-### âœ” Request Middleware
-
-Every incoming request is evaluated: - Device/Client fingerprint\
-- IP consistency\
-- Geo anomalies\
-- Token validity\
-- Token rotation schedule
-
-------------------------------------------------------------------------
-
-## ðŸ“¨ Asynchronous Processing (Celery + Redis + RabbitMQ)
-
-Used for: - Email verification\
-- Reset password emails\
-- Security alerts\
-- Blacklist clean-up\
-- Event logging
-
-High-performance, non-blocking.
-
-------------------------------------------------------------------------
-
-## ðŸ³ Docker Deployment
-
-Included files: - `Dockerfile` - `docker-compose.yml`
-
-Services: - Django backend\
-- Redis\
-- RabbitMQ\
-- Celery Worker\
-- Celery Beat
-
-Run:
-
-``` bash
-docker-compose up -d --build
+```
+.
+├── docker-compose.yml
+├── requirements.txt
+├── prod/
+│   ├── manage.py
+│   ├── accounts/           # Registration, activation, password reset APIs
+│   ├── authentication/     # JWT + JWE + Cookie handling
+│   ├── middleware/         # Security middleware
+│   ├── tasks/              # Celery tasks
+│   ├── prod/               # Core settings (dev + prod)
+│   └── ...                 # Other components
 ```
 
-------------------------------------------------------------------------
+---
 
-## âš™ï¸ Environment Variables
+## 📦 Requirements
 
-Example available in `.env.example`.
+* Python **3.10+**
+* Docker & Docker Compose
+* Redis
+* RabbitMQ
+* PostgreSQL (via Docker)
 
-Includes: - SECRET_KEY\
-- JWT_SIGNING_KEY\
-- JWE_KEY\
-- DATABASE_URL\
-- REDIS_URL\
-- EMAIL CONFIG\
-- DEBUG MODE
+---
 
-------------------------------------------------------------------------
+## 🔧 Environment Variables
 
-## ðŸ“Œ How to Run the Project Locally
+Create a `.env` file inside `prod/` or root directory:
 
-### 1. Install dependencies
+```
+DEBUG=True
+SECRET_KEY=your_secret
+ALLOWED_HOSTS=127.0.0.1,localhost
 
-    pip install -r requirements.txt
+# Database
+DATABASE_URL=postgres://user:pass@db:5432/dbname
 
-### 2. Run migrations
+# Security
+JWE_KEY=your_jwe_key
 
-    python manage.py migrate
+# Redis / RabbitMQ
+REDIS_URL=redis://redis:6379/1
+CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+CELERY_RESULT_BACKEND=redis://redis:6379/1
 
-### 3. Run server
+# Email
+EMAIL_HOST=smtp.gmail.com
+EMAIL_PORT=587
+EMAIL_HOST_USER=your_email
+EMAIL_HOST_PASSWORD=your_pass
+DEFAULT_FROM_EMAIL=your_email
 
-    python manage.py runserver
+# Google Auth
+GOOGLE_CLIENT_ID=...
+GOOGLE_CLIENT_SECRET=...
 
-------------------------------------------------------------------------
+# AWS (optional)
+AWS_ACCESS_KEY_ID=...
+AWS_SECRET_ACCESS_KEY=...
+AWS_STORAGE_BUCKET_NAME=...
+```
 
-## ðŸ§ª API Endpoints
+---
 
-### **POST /api/auth/login/**
+## 🐳 Running with Docker (Recommended)
 
-Authenticate user â†’ returns (encrypted) tokens in cookies.
+```bash
+docker compose up --build -d
+```
 
-### **POST /api/auth/refresh/**
+To stop all services:
 
-Rotates refresh token â†’ new secure tokens.
+```bash
+docker compose down
+```
 
-### **POST /api/auth/logout/**
+---
 
-Blacklist tokens + remove cookies.
+## 🖥️ Running Locally (Without Docker)
 
-### **POST /api/accounts/register/**
+```bash
+pip install -r requirements.txt
+python manage.py migrate
+python manage.py runserver
 
-Create account.
+# Run Celery
+celery -A prod.celery worker --loglevel=info
+celery -A prod.celery beat --loglevel=info
+```
 
-### **POST /api/accounts/verify-email/**
+---
 
-Email validation via Celery.
+## 🔥 API Endpoints (Summary)
 
-------------------------------------------------------------------------
+### **Auth**
 
-## ðŸ Conclusion
+* POST `/api/auth/login/` — Login (Cookies returned: access + refresh)
+* POST `/api/auth/refresh/` — Refresh with token rotation
+* POST `/api/auth/logout/` — Logout + Blacklist
 
-This project shows: - **Production-level Django skills** - **Deep
-security understanding** - **Asynchronous distributed architecture** -
-**Real microservice-friendly design** - **Enterprise token security
-(JWT + JWE + cookies)**
+### **Account**
 
-It is absolutely strong enough to appear in a **professional CV** or
-**portfolio**.
+* POST `/api/accounts/register/`
+* POST `/api/accounts/verify-email/`
+* POST `/api/accounts/reset-password/`
+* POST `/api/accounts/reset-password-confirm/`
+
+### **Google OAuth2**
+
+* POST `/api/auth/google/`
+
+---
+
+## 🔎 Security Highlights
+
+* **Encrypted JWT (JWE)** → protects token contents even if intercepted
+* **HttpOnly Cookies** → JavaScript cannot access tokens
+* **SameSite=Strict** → Strong CSRF protection
+* **Token Blacklisting & Rotation** → Prevents replay attacks
+* Custom middleware for:
+
+  * Suspicious IP change detection
+  * Device fingerprint mismatch
+  * Session hardening
+
+---
+
+## 📬 Celery Tasks
+
+* Send activation email
+* Send password reset email
+* Cleanup old blacklisted tokens
+* Scheduled tasks with Celery Beat
+
+---
+
+## 🧪 Tests
+
+Available test modules:
+
+* `test_serializers.py`
+* `test_views_activation.py`
+* `test_views_login.py`
+* `test_views_register.py`
+* `test_views_reset_password.py`
+
+Run tests:
+
+```bash
+python manage.py test
+```
+
+---
+
+## 📝 License
+
+Licensed under the **Apache-2.0 License**.
+
+---
+
+## ✨ Author
+
+**Moamen Mahmoud**  — Backend Developer
+
+---
+
+If you'd like, I can:
+
+* Expand the README with diagrams (architecture, token flow)
+* Add cURL examples for each endpoint
+* Add build badges and CI setup
+* Add installation steps for production
+
+Just tell me what you want to add!
