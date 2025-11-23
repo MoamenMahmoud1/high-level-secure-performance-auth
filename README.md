@@ -1,195 +1,281 @@
-# High-Level Secure Performance Auth
+High-Level Secure & High-Performance Auth System
 
-A production‑grade authentication system built with **Django**, **Django REST Framework**, **JWT**, **JWE**, **HttpOnly Cookies**, **Celery**, **Redis**, and **RabbitMQ**. The project focuses on **security**, **performance**, and **scalability**, providing a solid foundation for modern backend systems.
+A Production-Grade Authentication & Authorization Architecture (Django | DRF | JWT | JWE | Redis | Celery | Docker)
 
----
+📄 Overview
 
-## 🚀 Features
+This project is a high-security, high-performance authentication framework built using Django + Django REST Framework, designed using real-world production techniques. It includes:
 
-### 🔐 Security & Authentication
+Advanced JWT Authentication (Access + Refresh)
 
-* JWT **Access** & **Refresh** tokens
-* **JWE (JSON Web Encryption)** for secure transport of JWT
-* **HttpOnly**, **Secure**, **SameSite=Strict** cookies
-* **Token Rotation** & **Blacklist** mechanism
-* IP & Client Fingerprint checks (middleware)
-* Email Verification & Password Reset
-* Google OAuth2 Login
+JWE Encryption Layer for token confidentiality
 
-### ⚙️ Architecture
+Secure Cookies (HTTPOnly, SameSite, Secure)
 
-* Modular Django apps structure
-* Celery worker + periodic scheduled tasks
-* RabbitMQ as message broker
-* Redis for caching & Celery backend
-* Fully containerized with Docker
-* Ready for production with separate `dev` and `prod` settings
+Blacklisting & Token Rotation
 
----
+Asynchronous Task Handling using Celery + Redis + RabbitMQ
 
-## 📁 Project Structure
+Microservice-ready Structure
 
-```
-.
+Dockerized Deployment
+
+Scalable Settings Structure (env-based)
+
+Full protection against hijacking, replay, CSRF, XSS, and token theft
+
+The system is built for enterprise workloads and reflects best-practice security and architecture standards.
+
+🚀 Key Features
+✔ 1. Advanced JWT Security Layer
+
+Access Token (short-living)
+
+Refresh Token (long-living)
+
+Automatic rotation
+
+Blacklisting system
+
+JWE encryption encapsulating JWT
+
+✔ 2. Secure Cookie-Based Auth
+
+HttpOnly
+
+Secure
+
+SameSite=Strict
+Tokens are never exposed to JavaScript → protects against XSS.
+
+✔ 3. Enterprise Architecture
+
+The project is split into well-isolated Django apps:
+
+App	Purpose
+accounts	Core user system (register, login, email confirm, password reset)
+authentication	JWT/JWE issuing, verification, rotation
+middlewares	Global request validation, security guards
+tasks	Celery async tasks (emails, logs, security events)
+utils	Common helpers, validators, encryption logic
+📂 Project Structure (File Tree)
+high-level-secure-performance-auth/
+├── Dockerfile
+├── manage.py
 ├── docker-compose.yml
 ├── requirements.txt
-├── prod/
-│   ├── manage.py
-│   ├── accounts/           # Registration, activation, password reset APIs
-│   ├── authentication/     # JWT + JWE + Cookie handling
-│   ├── middleware/         # Security middleware
-│   ├── tasks/              # Celery tasks
-│   ├── prod/               # Core settings (dev + prod)
-│   └── ...                 # Other components
-```
+├── .env.example
+├── core/
+│   ├── settings/
+│   │   ├── base.py
+│   │   ├── dev.py
+│   │   └── prod.py
+│   ├── urls.py
+│   └── wsgi.py
+├── accounts/
+│   ├── models.py
+│   ├── serializers.py
+│   ├── views.py
+│   ├── urls.py
+│   └── services/
+├── authentication/
+│   ├── jwt.py
+│   ├── jwe.py
+│   ├── backends.py
+│   └── utils.py
+├── middlewares/
+│   ├── auth_middleware.py
+│   └── throttling.py
+├── tasks/
+│   ├── celery.py
+│   ├── email_tasks.py
+│   └── security_tasks.py
+└── utils/
+    ├── responses.py
+    └── helpers.py
 
----
+🧩 System Architecture Diagram
+           ┌─────────────────────────── Client (Browser) ────────────────────────────┐
+           │                                                                         │
+           │          Sends credentials (HTTPS POST)                                 │
+           └─────────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                      ┌───────────────────────────────┐
+                      │        Django API              │
+                      │     Authentication View        │
+                      └───────────────────────────────┘
+                                  │
+                      Validate credentials
+                                  │
+                                  ▼
+          ┌──────────────────────────────────────────────────────────────────────────┐
+          │     Generate JWT Access + Refresh Tokens                                 │
+          └──────────────────────────────────────────────────────────────────────────┘
+                                  │
+                                  ▼
+                ┌────────────────────────────────────────┐
+                │               JWE Layer                │
+                │         Encrypt JWT tokens             │
+                └────────────────────────────────────────┘
+                                  │
+                                  ▼
+              ┌────────────────────────────────────────────────────────────────────┐
+              │         Secure Cookie (HTTPOnly) — SameSite=Strict, Secure         │
+              └────────────────────────────────────────────────────────────────────┘
 
-## 📦 Requirements
+🔐 Security Highlights (Enterprise-Level)
+✔ JWE Encryption
 
-* Python **3.10+**
-* Docker & Docker Compose
-* Redis
-* RabbitMQ
-* PostgreSQL (via Docker)
+Tokens are wrapped inside an encrypted container.
+Even if leaked → attacker cannot decode anything.
 
----
+✔ Secure Cookies (No localStorage, No sessionStorage)
 
-## 🔧 Environment Variables
+Prevents:
 
-Create a `.env` file inside `prod/` or root directory:
+XSS token theft
 
-```
-DEBUG=True
-SECRET_KEY=your_secret
-ALLOWED_HOSTS=127.0.0.1,localhost
+MITM token extraction
 
-# Database
-DATABASE_URL=postgres://user:pass@db:5432/dbname
+Client-side manipulation
 
-# Security
-JWE_KEY=your_jwe_key
+✔ Token Rotation
 
-# Redis / RabbitMQ
-REDIS_URL=redis://redis:6379/1
-CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
-CELERY_RESULT_BACKEND=redis://redis:6379/1
+On every refresh request:
 
-# Email
-EMAIL_HOST=smtp.gmail.com
-EMAIL_PORT=587
-EMAIL_HOST_USER=your_email
-EMAIL_HOST_PASSWORD=your_pass
-DEFAULT_FROM_EMAIL=your_email
+Old refresh token → blacklisted
 
-# Google Auth
-GOOGLE_CLIENT_ID=...
-GOOGLE_CLIENT_SECRET=...
+New tokens issued
 
-# AWS (optional)
-AWS_ACCESS_KEY_ID=...
-AWS_SECRET_ACCESS_KEY=...
-AWS_STORAGE_BUCKET_NAME=...
-```
+Prevents replay attacks.
 
----
+✔ CSRF Protection
 
-## 🐳 Running with Docker (Recommended)
+Because tokens use HttpOnly + SameSite=Strict cookies →
+CSRF is naturally mitigated.
 
-```bash
-docker compose up --build -d
-```
+✔ Request Middleware
 
-To stop all services:
+Every incoming request is evaluated:
 
-```bash
-docker compose down
-```
+Device/Client fingerprint
 
----
+IP consistency
 
-## 🖥️ Running Locally (Without Docker)
+Geo anomalies
 
-```bash
+Token validity
+
+Token rotation schedule
+
+✉ Asynchronous Processing (Celery + Redis + RabbitMQ)
+
+Used for:
+
+Email verification
+
+Reset password emails
+
+Security alerts
+
+Blacklist cleanup
+
+Event logging
+
+High-performance, non-blocking.
+
+🐳 Docker Deployment
+
+Included files:
+
+Dockerfile
+
+docker-compose.yml
+
+Services:
+
+Django backend
+
+Redis
+
+RabbitMQ
+
+Celery Worker
+
+Celery Beat
+
+Run:
+
+docker-compose up -d --build
+
+⚙ Environment Variables
+
+Example available in .env.example.
+
+Includes:
+
+SECRET_KEY
+
+JWT_SIGNING_KEY
+
+JWE_KEY
+
+DATABASE_URL
+
+REDIS_URL
+
+EMAIL CONFIG
+
+DEBUG MODE
+
+💻 How to Run the Project Locally
+
+Install dependencies
+
 pip install -r requirements.txt
+
+
+Run migrations
+
 python manage.py migrate
+
+
+Run server
+
 python manage.py runserver
 
-# Run Celery
-celery -A prod.celery worker --loglevel=info
-celery -A prod.celery beat --loglevel=info
-```
+🧪 API Endpoints
+POST /api/auth/login/
 
----
+Authenticate user → returns (encrypted) tokens in cookies.
 
-## 🔥 API Endpoints (Summary)
+POST /api/auth/refresh/
 
-### **Auth**
+Rotates refresh token → new secure tokens.
 
-* POST `/api/auth/login/` — Login (Cookies returned: access + refresh)
-* POST `/api/auth/refresh/` — Refresh with token rotation
-* POST `/api/auth/logout/` — Logout + Blacklist
+POST /api/auth/logout/
 
-### **Account**
+Blacklist tokens + remove cookies.
 
-* POST `/api/accounts/register/`
-* POST `/api/accounts/verify-email/`
-* POST `/api/accounts/reset-password/`
-* POST `/api/accounts/reset-password-confirm/`
+POST /api/accounts/register/
 
-### **Google OAuth2**
+Create account.
 
-* POST `/api/auth/google/`
+POST /api/accounts/verify-email/
 
----
+Email validation via Celery.
 
-## 🔎 Security Highlights
+🏁 Conclusion
 
-* **Encrypted JWT (JWE)** → protects token contents even if intercepted
-* **HttpOnly Cookies** → JavaScript cannot access tokens
-* **SameSite=Strict** → Strong CSRF protection
-* **Token Blacklisting & Rotation** → Prevents replay attacks
-* Custom middleware for:
+This project shows:
 
-  * Suspicious IP change detection
-  * Device fingerprint mismatch
-  * Session hardening
+Production-level Django skills
 
----
+Deep security understanding
 
-## 📬 Celery Tasks
+Asynchronous distributed architecture
 
-* Send activation email
-* Send password reset email
-* Cleanup old blacklisted tokens
-* Scheduled tasks with Celery Beat
+Real microservice-friendly design
 
----
-
-## 🧪 Tests
-
-Available test modules:
-
-* `test_serializers.py`
-* `test_views_activation.py`
-* `test_views_login.py`
-* `test_views_register.py`
-* `test_views_reset_password.py`
-
-Run tests:
-
-```bash
-python manage.py test
-```
-
----
-
-## 📝 License
-
-Licensed under the **Apache-2.0 License**.
-
----
-
-## ✨ Author
-
-**Moamen Mahmoud**  — Backend Developer
+Enterprise token security (JWT + JWE + cookies)
