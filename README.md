@@ -193,14 +193,3 @@ Licensed under the **Apache-2.0 License**.
 ## ✨ Author
 
 **Moamen Mahmoud**  — Backend Developer
-
----
-
-If you'd like, I can:
-
-* Expand the README with diagrams (architecture, token flow)
-* Add cURL examples for each endpoint
-* Add build badges and CI setup
-* Add installation steps for production
-
-Just tell me what you want to add!
